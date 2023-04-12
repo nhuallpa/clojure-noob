@@ -414,3 +414,156 @@
   (filter not-vampire? (map vampire-related-details social-security-numbers)))
 
 (identify-humans (range 0 10))
+
+
+;; CAPTER 5
+
+;; Recursion instead of for/while
+;; Immutable data structures ensure that your code won’t have side effects
+(defn sum
+  ([vals] 
+    (sum vals 0))
+  ([vals accumulating-total]
+    (if (empty? vals)
+      accumulating-total
+      (sum (rest vals) (+ (first vals) accumulating-total)))))
+
+;; Using recur keyword
+
+(defn sum
+  ([vals] 
+    (sum vals 0))
+  ([vals accumulating-total]
+    (if (empty? vals)
+      accumulating-total
+      (recur (rest vals) (+ (first vals) accumulating-total)))))
+
+
+;; Function composition instead of attribute Mutation
+
+(require '[clojure.string :as s])
+(defn clean
+  [text]
+  (s/replace (s/trim text) #"lol" "LOL")) ; function composition of pure functions
+(clean "My boa constrictor is so sassy lol!")
+
+;; COMP composition of functions
+
+((comp inc *) 2 3)
+
+(def character
+  {:name "Smooches McCutes"
+   :attributes {:intelligence 10
+                :strength 4
+                :dexterity 5}})
+(def c-int (comp :intelligence :attributes))  ;; Useful to look up attributes
+(def c-str (comp :strength :attributes))
+(def c-dex (comp :dexterity :attributes))
+
+(c-int character)
+
+(defn spell-slots
+  [char]
+  (int (inc (/ (c-int char) 2))))
+(spell-slots character)
+;; Using comp
+(def spell-slots-comp (comp int inc #(/ % 2) c-int))
+(spell-slots-comp character)
+
+
+
+(defn two-comp
+ "Custom comp with two functions"
+ [f g]
+ (fn [& args]
+    (f (apply g args))))
+
+;; example:
+(def inc-mult (two-comp inc *))
+
+
+;; MEMOIZE: Storing the arguments passed to a function and the return value of the function.
+
+(defn sleepy-identity
+  "Returns the given value after 1 second"
+  [x]
+  (Thread/sleep 1000)
+  x)
+(sleepy-identity "Mr. Fantastico")
+
+(def memo-sleepy-identity (memoize sleepy-identity))
+
+
+;; Java: Class  Clojure: namespace
+(ns paquete.namespace)
+
+;; List
+'(1 2 3)
+(quote (1 2 3))
+(def numbers (list 1 2 3))
+(nth numbers 1) ;; valor del indice 1
+(conj numbers 4) ;; crea una nueva lista
+
+;; Vector
+(def letters (vector "a" "b" "c"))
+
+;; Los keywords actuan como funciones
+
+;; MAP
+{"a" 1 "b" 2}
+(def countries
+  {:co "Colombia"
+   :pe "Peru"
+  })
+
+(assoc countries :br "Brazil") ; Associete key and value in the map
+
+;; Note: Call funtion in ifs instead of write block of code.
+See 
+;;cond, when
+(def members
+  [{:name "nestor" :nationality :pe}])
+
+
+(def is-co-partial?
+  (comp (partial = :co) :nationality))
+
+(filter is-co-partial? members)
+
+;; Destructuring
+(defn Destructuring
+ [{:keys [path-param]}]
+  )
+;; group-by 
+(group-by :nationality members)
+
+;; Associative Destructuring
+;; Example:
+(def client {:name "Super Co."
+             :location "Philadelphia"
+             :description "The worldwide leader in plastic tableware"})
+
+(let [name (:name client)
+      location (:location client)
+      description (:description client)]
+  (println name location "-" description))
+
+;; Using associative destructuring:
+(let [{name :name 
+      location :location 
+      description :description} client]
+  (println name location "-" description))
+
+;; Using associative destructuring with :keys reduce redundant information
+(let [{:keys [name location description]} client]
+  (println name location "-" description))
+;= Super Co. Philadelphia - The worldwide leader in plastic tableware.
+
+
+; Return a new map with the given value at the specified nesting.
+(assoc-in {} [:cookie :monster :vocals] "Fintroll")
+; {:cookie {:monster {:vocals "Fintroll"}}}
+
+; lets you look up values in nested maps
+(get-in {:cookie {:monster {:vocals "Fintroll"}}} [:cookie :monster])
+; {:vocals "Fintroll"}

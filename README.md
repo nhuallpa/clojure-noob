@@ -1,6 +1,6 @@
 # clojure-noob
 
-FIXME: description
+Clojure lab to run code to learn clojure
 
 ## Installation
 
@@ -15,6 +15,9 @@ FIXME: explanation
 ## Options
 
 FIXME: listing of options this app accepts.
+
+sdk list leiningen
+
 
 ## Examples
 
