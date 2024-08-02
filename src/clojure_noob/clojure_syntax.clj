@@ -1,4 +1,6 @@
-;;                  Clojure-Syntax: https://www.braveclojure.com/do-things/
+(ns clojure-noob.clojure-syntax)
+
+;; Clojure-Syntax: https://www.braveclojure.com/do-things/
 
 ;;BOOLEAN OPERATORS 
 (when true
@@ -495,7 +497,7 @@
 
 
 ;; Java: Class  Clojure: namespace
-(ns paquete.namespace)
+(ns clojure-noob.clojure-syntax)
 
 ;; List
 '(1 2 3)
