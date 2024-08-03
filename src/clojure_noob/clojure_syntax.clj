@@ -78,8 +78,6 @@
 ((and (= 1 1) +) 1 2 3)
 ((first [+ :a 1]) 1 2 3)
 
-;Transforming by Map
-(map inc [1 2 3 4 5]) ; Incremente each value
 
 ;Defining
 (defn too-enthusiastic                             ; NAME
@@ -231,90 +229,12 @@
 
 ;; CHAPTER 4: FUNCTION IN DEPTH
 
-;; Map with multiples collection
-(map str ["a" "b" "c"] ["A" "B" "C"])
 
-;; Example
-(def human-consumption   [1 2 4 2 3 6])
-(def critter-consumption [99 88 66 99 7 7])
-(defn unify-diet-data
-  [human critter]
-  {:human human
-   :critter critter})
 
-(map unify-diet-data human-consumption critter-consumption)
 
-;; Map with multiples functions
-(def sum #(reduce + %))
-(def avg #(/ (sum %) (count %)))
-(defn stats
-  [numbers]
-  (map #(% numbers) [sum count avg])) // % take function as parameters
 
-;; Map for getting keywords from a map
-(def identities
- [{:alias "Batman" :real "Bruce waynes"}
-  {:alias "SpiderMan" :real "Peter Parker"}
-  {:alias "Santa" :real "Claus"}
-  {:alias "Bunny" :real "Buzz"}])
 
-(map :real identities)
 
-;; REDUCE
-
-; Reduce a Map to produce a Map
-(reduce (fn [new-map [key value]]
-          (assoc new-map key (inc value)))
-        {}
-        {:min 30 :max 60}) ; {:min 31, :max 61}
-
-; Reduce to filter keys base on their values
-(reduce (fn [new-map [key value]]
-          (if (> value 4)
-            (assoc new-map key value)
-            new-map))
-        {}
-        {:human 4.1 :critter 3.9}) ; {:human 4.1}
-
-;; Take, Drop, Take-while, and Drop-while
-
-(take 3 [ 4 5 67 8 9]) ; (4 5 67)
-(drop 1 [9 8 6 8]) ; (8 6 8)
-
-;; Take while
-(def food-journal
-  [{:month 1 :day 1 :human 5.3 :critter 2.3}
-   {:month 1 :day 2 :human 5.1 :critter 2.0}
-   {:month 2 :day 1 :human 4.9 :critter 2.1}
-   {:month 2 :day 2 :human 5.0 :critter 2.5}
-   {:month 3 :day 1 :human 4.2 :critter 3.3}
-   {:month 3 :day 2 :human 4.0 :critter 3.8}
-   {:month 4 :day 1 :human 3.7 :critter 3.9}
-   {:month 4 :day 2 :human 3.7 :critter 3.6}])
-;; Retrieve elements from january and february's data.
-(take-while #(< (:month %) 3) food-journal)
-
-;; Drop elements from January and February's data
-(drop-while #(< (:month %) 3) food-journal)
-
-;; Combine take-while and drop-while
-;; Retrieve February an March's data
-(take-while #(< (:month %) 4) 
-            (drop-while #(< (:month %) 2) food-journal)) 
-
-;; Filter and Some
-(filter #(< (:month %) 3) food-journal) ; take-while could be more efficient with ordered data.
-(some #(< (:month %) 3) food-journal) ; true
-
-;; Using some to return the entry
-(some #(and (< (:month %) 3) %) food-journal) ; {:month 1, :day 1, :human 5.3, :critter 2.3}
-
-;; SORT AND SORT-BY
-(sort [3 4 6 2 3 7 8])
-(sort-by count ["aaaa" "bb" "Nestor"])
-
-;; CONCAT
-(concat [2 34 5] [2 4 6 3])
 
 ;; Lazy Seq Efficiency
 (def vampire-database
