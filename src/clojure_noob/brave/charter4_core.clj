@@ -135,3 +135,153 @@
 
 
 ;:::::::::::: LAZY SEQs :::::::::
+; A lazy seq is a seq whose members aren’t computed until you try to access them
+
+(def vampire-database
+  {0 {:makes-blood-puns? false, :has-pulse? true  :name "McFishwich"}
+   1 {:makes-blood-puns? false, :has-pulse? true  :name "McMackson"}
+   2 {:makes-blood-puns? true,  :has-pulse? false :name "Damon Salvatore"}
+   3 {:makes-blood-puns? true,  :has-pulse? true  :name "Mickey Mouse"}})
+
+(defn vampire-related-details
+  [social-security-number]
+  (Thread/sleep 1000)
+  (get vampire-database social-security-number))
+
+(defn vampire?
+  [record]
+  (and (:makes-blood-puns? record)
+       (not (:has-pulse? record))
+       record))
+
+(defn identify-vampire
+  [social-security-numbers]
+  (first (filter vampire? (map vampire-related-details social-security-numbers)))) ; map is lazy
+
+(time (vampire-related-details 0))
+
+
+; map is lazy, it doesn't apply vampire-related-details
+; it does have the recipe for generating its elements.
+(time (def mapped-details (map vampire-related-details (range 0 1000000))))
+; "Elapsed time: 0.191334 msecs"
+
+; Accesing the fist element:
+(time (first mapped-details))
+; "Elapsed time: 32108.166167 msecs"
+; Clojure went ahead and prepared the next 31 as well!!!!!!
+(time (first mapped-details))
+; "Elapsed time: 0.057583 msecs"
+
+
+
+;; INFINIT SEQUENCE
+
+(concat (take 8 (repeat "na")) ["Batman!"])
+
+; repeatedly will call a provided function
+(take 3 (repeatedly (fn [] (rand-int 10))))
+
+(defn even-numbers
+  ([] (even-numbers 0))
+  ([n] (cons n (lazy-seq (even-numbers (+ n 2))))))
+
+(take 10 (even-numbers))
+
+
+
+;; COLLECTION ABSTRACION
+(map identity [:nombre :apellido :edad])            ;; return a seq
+; (:nombre :apellido :edad)
+
+(into [] (map identity [:nombre :apellido :edad]))  ;; convert into an array again
+
+(map identity {:sunlight-reaction "Glitter!"})
+; the map function return a seq
+
+(into {} (map identity {:sunlight-reaction "Glitter!"}))
+; {:sunlight-reaction "Glitter!"}
+; convert again to a map
+
+
+;; INTO: taking two collections and adding all the elements from the second to the first
+;; INTO takes a seqable data structure
+
+;; a set
+(map identity [:garlic-clove :garlic-clove])
+(into #{} (map identity [:garlic-clove :garlic-clove]))
+; => #{:garlic-clove}
+
+;; Add elements to a 'map'
+(into {:cherry 10} [[:tomato 30]])
+; => {:cherry 10, :tomato 30}
+
+;; Add elements to a 'vector'
+(into ["cherry"] '("pipe" "sprune"))
+; => ["cherry" "pipe" "sprune"]
+
+(into {:favorite-animal "kitty"} {:least-favorite-smell "dog"
+                                  :relationship-with-teenager "creepy"})
+
+
+;; CONJ:
+;; takes a rest parameter
+(conj [0] [1])   ;[0 [1]]
+(conj [0] 1)     ;[0 1]
+; Notice that the number 1 is passed as a scalar (singular, non-collection) value,
+; whereas into’s second argument must be a collection.
+
+(conj [0] 1 2 3 4 5)
+; [0 1 2 3 4 5]
+(conj {:time "mindnight"} [:place "cementerium"])
+; => {:time "mindnight", :place "cementerium"}
+
+(defn my-conj
+  [target & additions]
+  (into target additions))
+
+(my-conj [0] 1 2 3)
+
+
+;;:::::::::::::::::::: FUNCTION ::::::::::::::
+;; APPLY and PARTIAL: Accept and return function
+
+;; APPLY
+(max 1 2 3 4 5)
+; max takes any number of arguments
+
+(max [1 2 3 4 5])
+; => [1 2 3 4 5]
+
+(apply max [1 2 3 4 5])
+;=> 5
+; apply explodes the elements of collections and passes as separates arguments
+
+;; PARTIAL. Return a partial function
+
+(def add10 (partial + 10))
+(add10 6)
+; => 16
+
+;; quote about partial: In general, you want to use partials when you find you’re repeating the same combination of function and arguments in many different contexts.
+
+;; logger and partial
+(defn lousy-logger
+  [log-level message]
+  (condp = log-level
+    :warn (clojure.string/lower-case message)
+    :emergency (clojure.string/upper-case message)))
+
+(def warn (partial lousy-logger :warn))
+(warn "Red light ahead")
+
+
+
+;; COMPLEMENT
+;; It’s so common to want the complement (the negation) of a Boolean function
+(def not-vampire? (complement vampire?)) ;; vampire is defined abode
+(defn identify-humans
+  [social-security-numbers]
+  (filter not-vampire? (map vampire-related-details social-security-numbers)))
+
+(identify-humans (range 0 10))
